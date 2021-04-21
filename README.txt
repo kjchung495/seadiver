@@ -1,17 +1,18 @@
-"toynn" is a DeepLearning Framework with handy functionalities.
+"toynn" is a Python based DeepLearning Framework which maximized its accessibility for DL beginners.
 
-You'll be able to create a model in the desired structure with a single line of code.
+You can start by creating a model in any desired structure with only 3 required arguments.
 Easily train, predict and visualize your model. 
 
-"toynn" supports 'export' and 'import' of models in 'json' format.
+"toynn" supports 'export' and 'import' function in 'json' format.
+pip install is available >> "pip install toynn"
 
 Simple example for usage is like below.
 =======================================================================
 import toynn
 
 #build a model
-model = toynn.model.ANN(input_shape=(1, 784), structure = (100, 100, 100, 10), output="softmax", activation=("relu", "relu", "relu"))
-model.describe()
+model = toynn.model.ANN(input_shape=(1, 784), structure = (100, 100, 100, 10), output="softmax")
+model.describe()  #prints how the model looks
 
 #train
 model.train(y= TRAIN_BATCH, t= ANSWER_BATCH, learning_rate=0.001, iteration=1000)
