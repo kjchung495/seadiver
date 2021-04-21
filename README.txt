@@ -23,10 +23,9 @@ model.predict(x = INPUT)
 model.export(directory = "C:\Users.......//", file_name="myModel.json")
 
 #import model from a local directory
-factory = toynn.factory.factory()
-model2 = factory.make(directory = "C:\User.....\myModel.json")
+model2 = toynn.factory.make(file = "C:\User.....\myModel.json")
 
 =======================================================================
 
-Updates on more types of model such as 'CNN', 'LSTM' is planned.
+Updates on more types of model such as 'CNN', 'LSTM' is underway.
 Thanks, and please contact the author via e-mail for any comment.
