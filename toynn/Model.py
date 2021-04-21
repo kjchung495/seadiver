@@ -5,7 +5,7 @@ import numpy as np
 import copy
 import time
 
-class Model():
+class ANN():
     
     def __init__(self, input_size, shape, output, activation= "relu", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
         
@@ -211,8 +211,6 @@ class Model():
         print("Activation functions: " + str(self.activation_functions))
         print("Loss functions: " + str(self.loss_functions))
         print("Initializers: " + str(self.initializer_list) + "\n")
-        
-        print(self.version)
         
         return
 

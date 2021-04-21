@@ -1,7 +1,8 @@
 README.txt
 setup.py
-toynn/Factory.py
-toynn/Model.py
+toynn/__init__.py
+toynn/factory.py
+toynn/model.py
 toynn.egg-info/PKG-INFO
 toynn.egg-info/SOURCES.txt
 toynn.egg-info/dependency_links.txt
