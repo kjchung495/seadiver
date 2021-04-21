@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: toynn
-Version: 0.0.4
+Version: 0.0.5
 Summary: DeepLearning Model Builder
 Home-page: https://github.com/kjchung495/toynn
 Author: KJ Chung
@@ -38,11 +38,6 @@ Description: "toynn" is a handy Neral Network model builder.
         
         Updates on more types of model such as 'CNN', 'LSTM' is planned.
         Thanks, and please contact the author via e-mail for any comment.
-        
-        #current issues
-        - 'batch_normalization'
-        - 'dropout'
-        - official documentation
 Keywords: ANN,Artifictial Neural Network,DeepLearning
 Platform: UNKNOWN
 Classifier: Intended Audience :: Science/Research

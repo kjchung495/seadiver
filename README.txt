@@ -30,8 +30,3 @@ model2 = factory.make(directory = "C:\User.....\myModel.json")
 
 Updates on more types of model such as 'CNN', 'LSTM' is planned.
 Thanks, and please contact the author via e-mail for any comment.
-
-#current issues
-- 'batch_normalization'
-- 'dropout'
-- official documentation

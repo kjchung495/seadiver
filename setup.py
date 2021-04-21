@@ -18,7 +18,7 @@ classifiers = [
 
 setup(
     name = "toynn",
-    version = "0.0.4",
+    version = "0.0.5",
     author = "KJ Chung",
     author_email = "kjchung495@yonsei.ac.kr",
     description = "DeepLearning Model Builder",
