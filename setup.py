@@ -17,8 +17,8 @@ classifiers = [
     ]
 
 setup(
-    name = "toynn",
-    version = "0.1.0",
+    name = "seadiver",
+    version = "0.0.2",
     author = "KJ Chung",
     author_email = "kjchung495@yonsei.ac.kr",
     description = "DeepLearning Model Builder",
@@ -26,9 +26,9 @@ setup(
     long_description_content_type = "text/markdown",
     license = "Apache Software License 2.0",
     keywords = "ANN, Artifictial Neural Network, DeepLearning",
-    url = "https://github.com/kjchung495/toynn",
+    url = "https://github.com/kjchung495/seadiver",
     classifiers = classifiers,
-    packages = ["toynn"],
+    packages = ["seadiver"],
     include_package_data = True,
     install_requires = ['numpy']
 )

@@ -1,17 +1,17 @@
-"toynn" is a Python based DeepLearning Framework which maximized its accessibility for DL beginners.
+"seadiver" is a Python based DeepLearning Framework which maximized its accessibility for DL beginners.
 
 You can start by creating a model in any desired structure with only 3 required arguments.
 Easily train, predict and visualize your model. 
 
-"toynn" supports 'export' and 'import' function in 'json' format.
-pip install is available >> "pip install toynn"
+"seadiver" supports 'export' and 'import' function in 'json' format.
+pip install is available >> "pip install seadiver"
 
 Simple example for usage is like below.
 =======================================================================
-import toynn
+import seadiver
 
 #build a model
-model = toynn.model.ANN(input_shape=(1, 784), structure = (100, 100, 100, 10), output="softmax")
+model = seadiver.model.ANN(input_shape=(1, 784), structure = (100, 100, 100, 10), output="softmax")
 model.describe()  #prints how the model looks
 
 #train
@@ -24,7 +24,7 @@ model.predict(x = INPUT)
 model.export(directory = "C:\Users....\", file_name="myModel.json")
 
 #import model from a local directory
-imported_model = toynn.factory.make(file = "C:\Users.....\myModel.json")
+imported_model = seadiver.factory.make(file = "C:\Users.....\myModel.json")
 
 =======================================================================
 
