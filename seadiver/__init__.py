@@ -1,2 +1,1 @@
-import toynn.model
-import toynn.factory
+import seadiver.model

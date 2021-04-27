@@ -2,27 +2,33 @@
 # coding: utf-8
 
 import numpy as np
+import pandas as pd
+
 import copy
 import time
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+
 class ANN():
     
-    def __init__(self, input_size, shape, output, activation= "relu", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
+    def __init__(self, input_shape, shape, output, activation= "sigmoid", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
         
         #describes compatible parameters
     
-        self.activation_functions = {"sigmoid", "relu", "softmax", "identity"}
-        self.loss_functions = {"cross_entropy", "mean_square", "auto"}
-        self.initializer_list = {"uniform", "normal", "xabier", "he", "auto"}
+        self.compat_activation_functions = {"sigmoid", "relu", "softmax", "identity"}
+        self.compat_loss_functions = {"cross_entropy", "mean_square", "auto"}
+        self.compat_initializers = {"uniform", "normal", "xabier", "he", "auto"}
         
         #model identity
         
-        self.layers = []
-        self.biases = []
-        self.activation = []
+        self.w_layers = []
+        self.b_layers = []
+        self.activations = []
         
-        self.input_size = input_size
-        self.shape = shape
+        self.input_shape = input_shape
+        self.structure = shape
         self.strict = strict
         self.delta = delta
         self.initializer = None
@@ -31,7 +37,7 @@ class ANN():
         
         #fields for temporal use and calculation
         
-        self.layer_gradients = []
+        self.w_gradients = []
         self.b_gradients = []
         
         self.affine_inputs = []
@@ -42,17 +48,17 @@ class ANN():
         
         #initialize fields if given parameters are valid
         
-        if initializer not in self.initializer_list:
+        if initializer not in self.compat_initializers:
             raise Exception("invalid initialzier name")
         else:
             self.initializer = initializer
             
-        if output not in self.activation_functions:
+        if output not in self.compat_activation_functions:
             raise Exception("invalid output function name")
         else:
             self.output = output
             
-        if loss not in self.loss_functions:
+        if loss not in self.compat_loss_functions:
             raise Exception("invalid loss function name")
         else:
             
@@ -81,22 +87,22 @@ class ANN():
         if activation == "relu":
             
             for i in range(len(shape)-1):
-                self.activation.append("relu")
+                self.activations.append("relu")
                 
         elif activation == "sigmoid":
             
             for i in range(len(shape)-1):
-                self.activation.append("sigmoid")
+                self.activations.append("sigmoid")
                 
         elif activation == "softmax":
             
             for i in range(len(shape)-1):
-                self.activation.append("softmax")
+                self.activations.append("softmax")
                 
         elif activation == "identity":
             
             for i in range(len(shape)-1):
-                self.activation.append("identity")
+                self.activations.append("identity")
                 
         elif type(activation) == list or type(activation) == tuple:
             
@@ -104,15 +110,15 @@ class ANN():
                 raise Exception("invalid number of activation functions")
             
             for i in range(len(activation)):
-                if activation[i] not in self.activation_functions:
+                if activation[i] not in self.compat_activation_functions:
                     raise Exception("invalid actiavtion function name")
                     
-            self.activation = activation
+            self.activations = activation
                 
         else:
             raise Exception("invalid actiavtion function name")
         
-        self.activation.append(self.output)
+        self.activations.append(self.output)
         
         
         #bias 초기값은 initializer 종류와 상관 없이 모두 -1~1사이 정규분포(표준편차=1)로 설정함
@@ -121,37 +127,37 @@ class ANN():
         
             for i in range(len(shape)):
                 if i == 0:
-                    self.layers.append(np.random.rand(input_size[1], shape[0]))
+                    self.w_layers.append(np.random.rand(input_shape[1], shape[0]))
                 else:
-                    self.layers.append(np.random.rand(shape[i-1], shape[i]))
+                    self.w_layers.append(np.random.rand(shape[i-1], shape[i]))
                 
             for i in range(len(shape)):
-                #self.biases.append(np.random.rand(input_size[0], shape[i]))
-                self.biases.append(np.random.randn())
+                #self.biases.append(np.random.rand(input_shape[0], shape[i]))
+                self.b_layers.append(np.random.randn())
         
         elif self.initializer == "normal":
             
             for i in range(len(shape)):
                 if i == 0:
-                    self.layers.append(np.random.randn(input_size[1], shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]))
                 else:
-                    self.layers.append(np.random.randn(shape[i-1], shape[i]))
+                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]))
                 
             for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_size[0], shape[i]))
-                self.biases.append(np.random.randn())
+                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+                self.b_layers.append(np.random.randn())
                 
         elif self.initializer == "xabier" or (self.initializer == "auto" and activation == "sigmoid"):
             
             for i in range(len(shape)):
                 if i == 0:
-                    self.layers.append(np.random.randn(input_size[1], shape[0]) / np.sqrt(input_size[1]*shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]) / np.sqrt(input_shape[1]*shape[0]))
                 else:
-                    self.layers.append(np.random.randn(shape[i-1], shape[i]) / np.sqrt(shape[i-1]*shape[i]))
+                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]) / np.sqrt(shape[i-1]*shape[i]))
                 
             for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_size[0], shape[i]))
-                self.biases.append(np.random.randn())
+                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+                self.b_layers.append(np.random.randn())
                 
             self.initializer = "xabier"
                
@@ -159,26 +165,26 @@ class ANN():
             
             for i in range(len(shape)):
                 if i == 0:
-                    self.layers.append(np.random.randn(input_size[1], shape[0]) / 2*np.sqrt(input_size[1]*shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]) / 2*np.sqrt(input_shape[1]*shape[0]))
                 else:
-                    self.layers.append(np.random.randn(shape[i-1], shape[i]) / 2*np.sqrt(shape[i-1]*shape[i]))
+                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]) / 2*np.sqrt(shape[i-1]*shape[i]))
                 
             for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_size[0], shape[i]))
-                self.biases.append(np.random.randn())
+                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+                self.b_layers.append(np.random.randn())
                 
             self.initializer = "he"
             
         else:
             for i in range(len(shape)):
                 if i == 0:
-                    self.layers.append(np.random.randn(input_size[1], shape[0]) / np.sqrt(input_size[1]*shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]) / np.sqrt(input_shape[1]*shape[0]))
                 else:
-                    self.layers.append(np.random.randn(shape[i-1], shape[i]) / np.sqrt(shape[i-1]*shape[i]))
+                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]) / np.sqrt(shape[i-1]*shape[i]))
                 
             for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_size[0], shape[i]))
-                self.biases.append(np.random.randn())
+                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+                self.b_layers.append(np.random.randn())
                 
             self.initializer = "xabier"
             print("Initializer set to 'xabier'")
@@ -187,20 +193,20 @@ class ANN():
     
     def describe(self):
         
-        print("Input Shape: " + str(self.input_size))
-        print("Network Sturcture: " + str(self.shape) + "\n")
+        print("Input Shape: " + str(self.input_shape))
+        print("Network Sturcture: " + str(self.structure) + "\n")
         
-        print("Actiavation: " + str(self.activation))
+        print("Actiavation: " + str(self.activations))
         print("Output Function: " + str(self.output))
         print("Loss Function: " + str(self.loss))
         print("Initializer: " + str(self.initializer) + "\n")
         
-        for i in range(len(self.layers)):
+        for i in range(len(self.w_layers)):
             print("Layer " + str(i+1) + "\n")
-            print(str(self.layers[i]) + "\n")
+            print(str(self.w_layers[i]) + "\n")
         
         print("Biases: \n")
-        print(str(self.biases) + "\n")
+        print(str(self.b_layers) + "\n")
         
         print(self.version)
         
@@ -208,20 +214,20 @@ class ANN():
     
     def params(self):
         
-        print("Activation functions: " + str(self.activation_functions))
-        print("Loss functions: " + str(self.loss_functions))
-        print("Initializers: " + str(self.initializer_list) + "\n")
+        print("Activation functions: " + str(self.compat_activation_functions))
+        print("Loss functions: " + str(self.compat_loss_functions))
+        print("Initializers: " + str(self.compat_initializers) + "\n")
         
         return
 
     
     def forward(self, x, t, display=False):
         
-        if np.asmatrix(x).shape[0] % self.input_size[0] != 0:
+        if np.asmatrix(x).shape[0] % self.input_shape[0] != 0:
             raise Exception("size of a mini-batch must be a multiple of specified input size of the model object")
         
         global batch_size
-        batch_size = int(np.asmatrix(x).shape[0]/self.input_size[0])
+        batch_size = int(np.asmatrix(x).shape[0]/self.input_shape[0])
         
         if display:
             print("batch_size: " + str(batch_size) +"\n")
@@ -235,9 +241,9 @@ class ANN():
         
         temp_x = x
         
-        for i in range(len(self.layers)): #affine and activation
+        for i in range(len(self.w_layers)): #affine and activation
             
-            temp_affined = self.affine_forward(temp_x, self.layers[i], self.biases[i])
+            temp_affined = self.affine_forward(temp_x, self.w_layers[i], self.b_layers[i])
             
             #batch normalization
             #if batch_normalization:
@@ -245,28 +251,28 @@ class ANN():
             
             self.affine_outputs.append(temp_affined)
             
-            if self.activation[i] == "sigmoid":
+            if self.activations[i] == "sigmoid":
                 temp_activated = self.sigmoid_forward(temp_affined)  # see here to check gradient loss!
                 self.affine_inputs.append(temp_activated)
                 
                 if display:
                     print("sigmoid forward " + str(temp_activated.shape))
                     
-            elif self.activation[i] == "relu":
+            elif self.activations[i] == "relu":
                 temp_activated = self.relu_forward(temp_affined)  # see here to check gradient loss!
                 self.affine_inputs.append(temp_activated)
                 
                 if display:
                     print("relu forward " + str(temp_activated.shape))
                     
-            elif self.activation[i] == "softmax":
+            elif self.activations[i] == "softmax":
                 temp_activated = self.softmax_forward(temp_affined)  # see here to check gradient loss!
                 self.affine_inputs.append(temp_activated)
                 
                 if display:
                     print("softmax forward " + str(temp_activated.shape))
                     
-            elif self.activation[i] == "identity":
+            elif self.activations[i] == "identity":
                 temp_activated = self.identity_forward(temp_affined)  # see here to check gradient loss!
                 self.affine_inputs.append(temp_activated)
                 
@@ -309,17 +315,17 @@ class ANN():
         
         #prepare gradient lists
         
-        self.layer_gradients = []
+        self.w_gradients = []
         self.b_gradients = []
         
         #prepare memory lists
         
-        activation_type_history = self.activation[::-1]
+        activation_type_history = self.activations[::-1]
         
         affine_outputs_history = self.affine_outputs[::-1]
         affine_inputs_history = self.affine_inputs[::-1]
         
-        layers_reversed = self.layers[::-1]
+        layers_reversed = self.w_layers[::-1]
         
         #back propagate loss function, omit if it's softmax-cross entroy' combination
         if self.loss == "cross_entropy":
@@ -335,14 +341,14 @@ class ANN():
             propagation = self.mean_square_backward(y, t)
         
         
-        for i in range(len(self.layers)):
+        for i in range(len(self.w_layers)):
             
             if activation_type_history[i] == "sigmoid":
                 propagation = self.sigmoid_backward(affine_outputs_history[i], affine_inputs_history[i], propagation)
                 
                 x_grad, layer_grad, b_grad = self.affine_backward(affine_inputs_history[i+1], layers_reversed[i], propagation) #the first element of'affine_inputs_history' is the final output of forward propagation and has been taken care of
                 
-                self.layer_gradients.append(layer_grad)
+                self.w_gradients.append(layer_grad)
                 self.b_gradients.append(b_grad)
                 
                 propagation = x_grad
@@ -355,7 +361,7 @@ class ANN():
                 
                 x_grad, layer_grad, b_grad = self.affine_backward(affine_inputs_history[i+1], layers_reversed[i], propagation) #the first element of'affine_inputs_history' is the final output of forward propagation and has been taken care of
                 
-                self.layer_gradients.append(layer_grad)
+                self.w_gradients.append(layer_grad)
                 self.b_gradients.append(b_grad)
                 
                 propagation = x_grad
@@ -375,7 +381,7 @@ class ANN():
                 
                 x_grad, layer_grad, b_grad = self.affine_backward(affine_inputs_history[i+1], layers_reversed[i], propagation) #the first element of'affine_inputs_history' is the final output of forward propagation and has been taken care of
                 
-                self.layer_gradients.append(layer_grad)
+                self.w_gradients.append(layer_grad)
                 self.b_gradients.append(b_grad)
                 
                 propagation = x_grad
@@ -388,7 +394,7 @@ class ANN():
                 
                 x_grad, layer_grad, b_grad = self.affine_backward(affine_inputs_history[i+1], layers_reversed[i], propagation) #the first element of'affine_inputs_history' is the final output of forward propagation and has been taken care of
                 
-                self.layer_gradients.append(layer_grad)
+                self.w_gradients.append(layer_grad)
                 self.b_gradients.append(b_grad)
                 
                 propagation = x_grad
@@ -397,50 +403,50 @@ class ANN():
                     print("identity backward " + str(layer_grad.shape))
                     
             else:
-                raise Exception("Gradient Propagation in Layer" + str(len(self.layers) - i) + " not successful")
+                raise Exception("Gradient Propagation in Layer" + str(len(self.w_layers) - i) + " not successful")
         
             if display:
-                    print("Layer" + str(len(self.layers) - i) + ": " + "propagated\n")
+                    print("Layer" + str(len(self.w_layers) - i) + ": " + "propagated\n")
         
-        self.layer_gradients = self.layer_gradients[::-1]
+        self.w_gradients = self.w_gradients[::-1]
         self.b_gradients = self.b_gradients[::-1]
         
         if display:
                        
-            for i in range(len(self.layer_gradients)):
+            for i in range(len(self.w_gradients)):
                 print("Layer" + str(i+1) + " gradients: \n")
-                print(str(self.layer_gradients[i]) + "\n")
+                print(str(self.w_gradients[i]) + "\n")
             
             print("Bias Gradients: \n")
             print(self.b_gradients)
             
-        return self.layer_gradients, self.b_gradients
+        return self.w_gradients, self.b_gradients
         
         
     def predict(self, x):
         
-        if np.asmatrix(x).shape[0] % self.input_size[0] != 0:
+        if np.asmatrix(x).shape[0] % self.input_shape[0] != 0:
             raise Exception("size of an input must be a multiple of specified input size of the model object")
         
         global batch_size
-        batch_size = int(np.asmatrix(x).shape[0]/self.input_size[0])
+        batch_size = int(np.asmatrix(x).shape[0]/self.input_shape[0])
         
         temp_x = x
         
-        for i in range(len(self.layers)): #affine and activation
+        for i in range(len(self.w_layers)): #affine and activation
             
-            temp_affined = self.affine_forward(temp_x, self.layers[i], self.biases[i])
+            temp_affined = self.affine_forward(temp_x, self.w_layers[i], self.b_layers[i])
             
-            if self.activation[i] == "sigmoid":
+            if self.activations[i] == "sigmoid":
                 temp_activated = self.sigmoid_forward(temp_affined)  # see here to check gradient loss!
                 
-            elif self.activation[i] == "relu":
+            elif self.activations[i] == "relu":
                 temp_activated = self.relu_forward(temp_affined)  # see here to check gradient loss!
                 
-            elif self.activation[i] == "softmax":
+            elif self.activations[i] == "softmax":
                 temp_activated = self.softmax_forward(temp_affined)  # see here to check gradient loss!
                 
-            elif self.activation[i] == "identity":
+            elif self.activations[i] == "identity":
                 temp_activated = self.identity_forward(temp_affined)  # see here to check gradient loss!
                 
             else:
@@ -483,13 +489,13 @@ class ANN():
             #print(str(self.b_gradients) + "\n")
                   
             #update
-            nparray_layers = np.array(self.layers, dtype=object)
-            nparray_biases = np.array(self.biases)
-            nparray_layer_gradients = np.array(self.layer_gradients, dtype=object)
+            nparray_layers = np.array(self.w_layers, dtype=object)
+            nparray_biases = np.array(self.b_layers)
+            nparray_layer_gradients = np.array(self.w_gradients, dtype=object)
             nparray_b_gradients = np.array(self.b_gradients)
             
-            self.layers = list(nparray_layers - nparray_layer_gradients*learning_rate)
-            self.biases = list(nparray_biases - nparray_b_gradients*learning_rate)
+            self.w_layers = list(nparray_layers - nparray_layer_gradients*learning_rate)
+            self.b_layers = list(nparray_biases - nparray_b_gradients*learning_rate)
             
             if i<5:
                 error_memory.append(error)
@@ -499,41 +505,57 @@ class ANN():
                 del error_memory[0]
                 error_memory.append(error)
             
-            if np.count_nonzero(nparray_layer_gradients[len(self.layers)-1] == 0) == np.size(nparray_layer_gradients[len(self.layers)-1]):
+            if np.count_nonzero(nparray_layer_gradients[len(self.w_layers)-1] == 0) == np.size(nparray_layer_gradients[len(self.w_layers)-1]):
                 print("Gradient Lost: last layer gradients equals to 0, i: " + str(i+1) + ", error: " + str(error))
                 return
             elif initial_five_passed and error_memory[0] == error_memory[1] == error_memory[2] == error_memory[3] == error_memory[4]:
                 print("Learning Effect Vanished, i: " + str(i+1) + ", error: " + str(error))
                 return
             
-            #for j in range(len(self.layer_gradients)):
-             #   self.layers[j] = self.layers[j] - self.layer_gradients[j]*learning_rate
-              #  self.biases[j] = self.biases[j] - self.b_gradients[j]*learning_rate
-
             if display:
-                if i < 1*iteration/10:
-                    print("process                      0% i: " + str(i+1)  + " error: " + str(round(error, error_round)), end="\r", flush=True)
+                if i < 0.5*iteration/10:
+                    print("process                      0%  epoch: " + str(i+1)  + " error: " + str(round(error, error_round)), end="\r", flush=True)
+                elif i < 1*iteration/10:
+                    print("process =                    5%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 1.5*iteration/10:
+                    print("process ==                   10%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 2*iteration/10:
-                    print("process ==                   10% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===                  15%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 2.5*iteration/10:
+                    print("process ====                 20%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 3*iteration/10:
-                    print("process ====                 20% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =====                25%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 3.5*iteration/10:
+                    print("process ======               30%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 4*iteration/10:
-                    print("process ======               30% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =======              35%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 4.5*iteration/10:
+                    print("process ========             40%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 5*iteration/10:
-                    print("process ========             40% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =========            45%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 5.5*iteration/10:
+                    print("process ==========           50%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 6*iteration/10:
-                    print("process ==========           50% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===========          55%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 6.5*iteration/10:
+                    print("process ============         60%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 7*iteration/10:
-                    print("process ============         60% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =============        65%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 7.5*iteration/10:
+                    print("process ==============       70%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 8*iteration/10:
-                    print("process ==============       70% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===============      75%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 8.5*iteration/10:
+                    print("process ================     80%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 9*iteration/10:
-                    print("process ================     80% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =================    85%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i < 9.5*iteration/10:
+                    print("process ==================   90%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 10*iteration/10:
-                    print("process ==================   90% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===================  95%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                elif i+1 == iteration:
+                    print("process ==================== 100%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n")
         
-        if display:
-            print("process ==================== 100% i: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n")
         
         end_time = time.time()
         
@@ -547,13 +569,6 @@ class ANN():
             
         return
     
-    
-    def test_accuracy(self, test_x, test_t):
-        
-        out, error = self.forward(test_x, test_t)
-        
-        
-        return 
     
     
     #활성화 함수 정의
@@ -701,21 +716,21 @@ class ANN():
         model_json = {}
         
         #essential export
-        model_json["input_shape"] = self.input_size
-        model_json["network_structure"] = self.shape
+        model_json["input_shape"] = self.input_shape
+        model_json["structure"] = self.structure
         model_json["strict"] = self.strict
         model_json["initializer"] = self.initializer
         model_json["output"] = self.output
         model_json["loss"] = self.loss
-        model_json["activation"] = self.activation
+        model_json["activations"] = self.activations
         model_json["delta"] = self.delta
         
         temp= []
-        for i in range(len(self.shape)):
-            temp.append(self.layers[i].tolist())
+        for i in range(len(self.structure)):
+            temp.append(self.w_layers[i].tolist())
         
         model_json["w_layers"] = temp
-        model_json["b_layers"] = self.biases
+        model_json["b_layers"] = self.b_layers
         
         #optional export
         
@@ -727,8 +742,8 @@ class ANN():
         
         try:
             temp=[]
-            for i in range(len(self.shape)):
-                temp.append(self.layer_gradients[i].tolist())
+            for i in range(len(self.structure)):
+                temp.append(self.w_gradients[i].tolist())
             
             model_json["w_gradients"] = temp
             
@@ -737,7 +752,7 @@ class ANN():
     
         try:
             temp=[]
-            for i in range(len(self.shape)):
+            for i in range(len(self.structure)):
                 temp.append(self.b_gradients[i].tolist())
             
             model_json["b_gradients"] = temp
@@ -747,7 +762,7 @@ class ANN():
         
         try:
             temp=[]
-            for i in range(len(self.shape)):
+            for i in range(len(self.structure)):
                 temp.append(self.affine_inputs[i].tolist())
 
             model_json["affine_inputs"] = temp
@@ -757,7 +772,7 @@ class ANN():
         
         try:
             temp=[]
-            for i in range(len(self.shape)):
+            for i in range(len(self.structure)):
                 temp.append(self.affine_outputs[i].tolist())
             
             model_json["affine_outputs"] = temp
@@ -773,3 +788,107 @@ class ANN():
         
         return
 
+    #util: visualizer
+
+    def vis_error_log(self):
+
+        visualize_error_log(self.error_log)
+        return
+
+
+
+#util: create a model from a json file
+
+def make(file):
+        
+    with open(file, "r") as f:
+        model_json = json.load(f)
+        
+    #create a default model
+        
+    model = ANN((1,1), (1, 1), "sigmoid")
+        
+    #essential imports
+        
+    model.input_shape = model_json["input_shape"]
+    model.structure = model_json["structure"]
+    model.strict = model_json["strict"]
+    model.initializer = model_json["initializer"]
+    model.output = model_json["output"]
+    model.loss = model_json["loss"]
+    model.activations = model_json["activations"]
+    model.delta = model_json["delta"]
+        
+    temp = []
+    for i in range(len(model.structure)):
+        temp.append(np.array(model_json["w_layers"][i]))
+        
+    model.w_layers = temp
+    model.b_layers = model_json["b_layers"]
+        
+        
+    #optional import
+        
+    model.error_log = model_json["error_log"]
+        
+    try:
+        temp = []
+        for i in range(len(model.structure)):
+            temp.append(np.array(model_json["w_gradients"][i]))
+            
+        model.w_gradients = temp
+            
+    except Exception as e:
+        pass
+        
+    try:
+        temp = []
+        for i in range(len(model.structure)):
+            temp.append(np.array(model_json["b_gradients"][i]))
+            
+        model.b_gradients = temp
+            
+    except Exception as e:
+        pass
+        
+    try:
+        temp = []
+        for i in range(len(model.structure)):
+            temp.append(np.array(model_json["affine_inputs"][i]))
+            
+        model.affine_inputs = temp
+            
+    except Exception as e:
+        pass
+        
+    try:
+        temp = []
+        for i in range(len(model.structure)):
+            temp.append(np.array(model_json["affine_outputs"][i]))
+            
+        model.affine_outputs = temp
+            
+    except Exception as e:
+        pass
+        
+    return model
+
+
+#util: visualizer
+
+def visualize_error_log(error_log):
+
+    mpl.rc('xtick', color = '#4A4A4A', labelsize = 12)
+    mpl.rc('ytick', color = '#4A4A4A', labelsize = 12)
+    mpl.rc('lines', linewidth = 1.5, markeredgewidth = 0)
+    mpl.rc('axes', labelsize= 18, titlesize = 30, titlepad=40, labelpad = 17)
+    mpl.rc('axes.spines', left=False, right=False, top=False, bottom = False)
+
+    fig = plt.figure(figsize = (20, 10))
+    plt.plot(error_log, color="#00ACCD")
+    plt.xlabel('Epoch')
+    plt.ylabel('Error')
+    plt.grid(True, color='#00ACCD', alpha=0.2, linestyle='--')
+
+    return
+  

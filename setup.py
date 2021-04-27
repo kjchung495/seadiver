@@ -18,10 +18,10 @@ classifiers = [
 
 setup(
     name = "seadiver",
-    version = "0.0.2",
+    version = "0.1.3",
     author = "KJ Chung",
     author_email = "kjchung495@yonsei.ac.kr",
-    description = "DeepLearning Model Builder",
+    description = "A DeepLearning Framework",
     long_description = readme(),
     long_description_content_type = "text/markdown",
     license = "Apache Software License 2.0",
@@ -30,6 +30,6 @@ setup(
     classifiers = classifiers,
     packages = ["seadiver"],
     include_package_data = True,
-    install_requires = ['numpy']
+    install_requires = ['numpy', 'matplotlib']
 )
 

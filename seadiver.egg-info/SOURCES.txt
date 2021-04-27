@@ -1,7 +1,6 @@
 README.txt
 setup.py
 seadiver/__init__.py
-seadiver/factory.py
 seadiver/model.py
 seadiver.egg-info/PKG-INFO
 seadiver.egg-info/SOURCES.txt
