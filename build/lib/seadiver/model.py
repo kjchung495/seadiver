@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 class ANN():
     
-    def __init__(self, input_shape, shape, output, activation= "sigmoid", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
+    def __init__(self, input_shape, structure, output, activation= "sigmoid", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
         
         #describes compatible parameters
     
@@ -28,7 +28,7 @@ class ANN():
         self.activations = []
         
         self.input_shape = input_shape
-        self.structure = shape
+        self.structure = structure
         self.strict = strict
         self.delta = delta
         self.initializer = None
@@ -459,7 +459,7 @@ class ANN():
         return network_out
     
     
-    def train(self, x, t, learning_rate = 0.01, iteration = 100, save_log=False, flush_log=True, display=True, error_round=10):
+    def train(self, x, t, learning_rate, iteration, save_log=False, flush_log=True, display=True, error_round=10):
         
         print("mini batch process (learning rate: " + str(learning_rate) + ", iteration: " + str(iteration) + ")")
         

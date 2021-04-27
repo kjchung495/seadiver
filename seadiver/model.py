@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 class ANN():
     
-    def __init__(self, input_shape, shape, output, activation= "sigmoid", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
+    def __init__(self, input_shape, structure, output, activation= "sigmoid", loss = "auto", initializer = "auto", strict=False, delta=1e-7):
         
         #describes compatible parameters
     
@@ -28,7 +28,7 @@ class ANN():
         self.activations = []
         
         self.input_shape = input_shape
-        self.structure = shape
+        self.structure = structure
         self.strict = strict
         self.delta = delta
         self.initializer = None
@@ -707,7 +707,7 @@ class ANN():
     
     #util: export
     
-    def export(self, directory, file_name="model.json"):
+    def export(self, directory=r".", file_name="model.json"):
         
         if not file_name.endswith(".json"):
             raise Exception("'file_name' must end with '.json'")
