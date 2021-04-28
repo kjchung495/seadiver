@@ -40,8 +40,8 @@ class ANN():
         self.w_gradients = []
         self.b_gradients = []
         
-        self.affine_inputs = []
-        self.affine_outputs = []
+        self.fan_ins = []
+        self.fan_outs = []
         
         self.error_log = []
         
@@ -69,7 +69,7 @@ class ANN():
                     
                 elif output == "identity":
                     self.loss = "mean_square"
-                    
+                
                 elif output == "relu":
                     self.loss = "mean_square"
 
@@ -86,27 +86,27 @@ class ANN():
         
         if activation == "relu":
             
-            for i in range(len(shape)-1):
+            for i in range(len(structure)-1):
                 self.activations.append("relu")
                 
         elif activation == "sigmoid":
             
-            for i in range(len(shape)-1):
+            for i in range(len(structure)-1):
                 self.activations.append("sigmoid")
                 
         elif activation == "softmax":
             
-            for i in range(len(shape)-1):
+            for i in range(len(structure)-1):
                 self.activations.append("softmax")
                 
         elif activation == "identity":
             
-            for i in range(len(shape)-1):
+            for i in range(len(structure)-1):
                 self.activations.append("identity")
                 
         elif type(activation) == list or type(activation) == tuple:
             
-            if len(activation) != len(shape)-1:
+            if len(activation) != len(structure)-1:
                 raise Exception("invalid number of activation functions")
             
             for i in range(len(activation)):
@@ -125,65 +125,65 @@ class ANN():
         
         if self.initializer == "uniform":
         
-            for i in range(len(shape)):
+            for i in range(len(structure)):
                 if i == 0:
-                    self.w_layers.append(np.random.rand(input_shape[1], shape[0]))
+                    self.w_layers.append(np.random.rand(input_shape[1], structure[0]))
                 else:
-                    self.w_layers.append(np.random.rand(shape[i-1], shape[i]))
+                    self.w_layers.append(np.random.rand(structure[i-1], structure[i]))
                 
-            for i in range(len(shape)):
-                #self.biases.append(np.random.rand(input_shape[0], shape[i]))
+            for i in range(len(structure)):
+                #self.biases.append(np.random.rand(input_shape[0], structure[i]))
                 self.b_layers.append(np.random.randn())
         
         elif self.initializer == "normal":
             
-            for i in range(len(shape)):
+            for i in range(len(structure)):
                 if i == 0:
-                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], structure[0]))
                 else:
-                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]))
+                    self.w_layers.append(np.random.randn(structure[i-1], structure[i]))
                 
-            for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+            for i in range(len(structure)):
+                #self.biases.append(np.random.randn(input_shape[0], structure[i]))
                 self.b_layers.append(np.random.randn())
                 
         elif self.initializer == "xabier" or (self.initializer == "auto" and activation == "sigmoid"):
             
-            for i in range(len(shape)):
+            for i in range(len(structure)):
                 if i == 0:
-                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]) / np.sqrt(input_shape[1]*shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], structure[0]) / np.sqrt(input_shape[1]*structure[0]))
                 else:
-                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]) / np.sqrt(shape[i-1]*shape[i]))
+                    self.w_layers.append(np.random.randn(structure[i-1], structure[i]) / np.sqrt(structure[i-1]*structure[i]))
                 
-            for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+            for i in range(len(structure)):
+                #self.biases.append(np.random.randn(input_shape[0], structure[i]))
                 self.b_layers.append(np.random.randn())
                 
             self.initializer = "xabier"
                
         elif self.initializer == "he" or (self.initializer == "auto" and activation == "relu"):
             
-            for i in range(len(shape)):
+            for i in range(len(structure)):
                 if i == 0:
-                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]) / 2*np.sqrt(input_shape[1]*shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], structure[0]) *np.sqrt(2/input_shape[1]))
                 else:
-                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]) / 2*np.sqrt(shape[i-1]*shape[i]))
+                    self.w_layers.append(np.random.randn(structure[i-1], structure[i]) * np.sqrt(2/structure[i-1]))
                 
-            for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+            for i in range(len(structure)):
+                #self.biases.append(np.random.randn(input_shape[0], structure[i]))
                 self.b_layers.append(np.random.randn())
                 
             self.initializer = "he"
             
         else:
-            for i in range(len(shape)):
+            for i in range(len(structure)):
                 if i == 0:
-                    self.w_layers.append(np.random.randn(input_shape[1], shape[0]) / np.sqrt(input_shape[1]*shape[0]))
+                    self.w_layers.append(np.random.randn(input_shape[1], structure[0]) / np.sqrt(input_shape[1]*structure[0]))
                 else:
-                    self.w_layers.append(np.random.randn(shape[i-1], shape[i]) / np.sqrt(shape[i-1]*shape[i]))
+                    self.w_layers.append(np.random.randn(structure[i-1], structure[i]) / np.sqrt(structure[i-1]*structure[i]))
                 
-            for i in range(len(shape)):
-                #self.biases.append(np.random.randn(input_shape[0], shape[i]))
+            for i in range(len(structure)):
+                #self.biases.append(np.random.randn(input_shape[0], structure[i]))
                 self.b_layers.append(np.random.randn())
                 
             self.initializer = "xabier"
@@ -208,8 +208,6 @@ class ANN():
         print("Biases: \n")
         print(str(self.b_layers) + "\n")
         
-        print(self.version)
-        
         return
     
     def params(self):
@@ -226,7 +224,6 @@ class ANN():
         if np.asmatrix(x).shape[0] % self.input_shape[0] != 0:
             raise Exception("size of a mini-batch must be a multiple of specified input size of the model object")
         
-        global batch_size
         batch_size = int(np.asmatrix(x).shape[0]/self.input_shape[0])
         
         if display:
@@ -234,10 +231,10 @@ class ANN():
 
         # prepare memory lists for backward propagation
                 
-        self.affine_inputs = []
-        self.affine_outputs = []
+        self.fan_ins = []
+        self.fan_outs = []
         
-        self.affine_inputs.append(x)
+        self.fan_ins.append(x)
         
         temp_x = x
         
@@ -249,32 +246,32 @@ class ANN():
             #if batch_normalization:
              #   temp_affined = 10
             
-            self.affine_outputs.append(temp_affined)
+            self.fan_outs.append(temp_affined)
             
             if self.activations[i] == "sigmoid":
                 temp_activated = self.sigmoid_forward(temp_affined)  # see here to check gradient loss!
-                self.affine_inputs.append(temp_activated)
+                self.fan_ins.append(temp_activated)
                 
                 if display:
                     print("sigmoid forward " + str(temp_activated.shape))
                     
             elif self.activations[i] == "relu":
                 temp_activated = self.relu_forward(temp_affined)  # see here to check gradient loss!
-                self.affine_inputs.append(temp_activated)
+                self.fan_ins.append(temp_activated)
                 
                 if display:
                     print("relu forward " + str(temp_activated.shape))
                     
             elif self.activations[i] == "softmax":
-                temp_activated = self.softmax_forward(temp_affined)  # see here to check gradient loss!
-                self.affine_inputs.append(temp_activated)
+                temp_activated = self.softmax_forward(temp_affined, batch_size)  # see here to check gradient loss!
+                self.fan_ins.append(temp_activated)
                 
                 if display:
                     print("softmax forward " + str(temp_activated.shape))
                     
             elif self.activations[i] == "identity":
                 temp_activated = self.identity_forward(temp_affined)  # see here to check gradient loss!
-                self.affine_inputs.append(temp_activated)
+                self.fan_ins.append(temp_activated)
                 
                 if display:
                     print("identity forward " + str(temp_activated.shape))
@@ -292,7 +289,7 @@ class ANN():
         #loss calculation
         
         if self.loss == "cross_entropy":
-            error = self.cross_entropy_forward(network_out, t)
+            error = self.cross_entropy_forward(network_out, t, batch_size)
             
         elif self.loss == "mean_square":
             error = self.mean_square_forward(network_out, t)
@@ -308,10 +305,10 @@ class ANN():
             print("Error: " + str(error))
             print("----------------------------------------\n")
         
-        return network_out, error
+        return network_out, error, batch_size
     
     
-    def backward(self, y, t, display = False):
+    def backward(self, y, t, batch_size, display = False):
         
         #prepare gradient lists
         
@@ -322,8 +319,8 @@ class ANN():
         
         activation_type_history = self.activations[::-1]
         
-        affine_outputs_history = self.affine_outputs[::-1]
-        affine_inputs_history = self.affine_inputs[::-1]
+        affine_outputs_history = self.fan_outs[::-1]
+        affine_inputs_history = self.fan_ins[::-1]
         
         layers_reversed = self.w_layers[::-1]
         
@@ -375,9 +372,9 @@ class ANN():
                     if not self.strict:
                         propagation = y-t
                     else:
-                        propagation = self.softmax_backward(affine_outputs_history[i], propagation)
+                        propagation = self.softmax_backward(affine_outputs_history[i], propagation, batch_size)
                 else:
-                    propagation = self.softmax_backward(affine_outputs_history[i], propagation)
+                    propagation = self.softmax_backward(affine_outputs_history[i], propagation, batch_size)
                 
                 x_grad, layer_grad, b_grad = self.affine_backward(affine_inputs_history[i+1], layers_reversed[i], propagation) #the first element of'affine_inputs_history' is the final output of forward propagation and has been taken care of
                 
@@ -428,7 +425,6 @@ class ANN():
         if np.asmatrix(x).shape[0] % self.input_shape[0] != 0:
             raise Exception("size of an input must be a multiple of specified input size of the model object")
         
-        global batch_size
         batch_size = int(np.asmatrix(x).shape[0]/self.input_shape[0])
         
         temp_x = x
@@ -444,7 +440,7 @@ class ANN():
                 temp_activated = self.relu_forward(temp_affined)  # see here to check gradient loss!
                 
             elif self.activations[i] == "softmax":
-                temp_activated = self.softmax_forward(temp_affined)  # see here to check gradient loss!
+                temp_activated = self.softmax_forward(temp_affined, batch_size)  # see here to check gradient loss!
                 
             elif self.activations[i] == "identity":
                 temp_activated = self.identity_forward(temp_affined)  # see here to check gradient loss!
@@ -454,7 +450,7 @@ class ANN():
 
             temp_x = temp_activated
                             
-        network_out = temp_activated      
+        network_out = temp_activated
         
         return network_out
     
@@ -604,8 +600,7 @@ class ANN():
         else:
             raise Exception("unsupported argument type: takes numpy array or matrix")
     
-    def softmax_forward(self, x):
-        global batch_size
+    def softmax_forward(self, x, batch_size):
     
         temp_x =  copy.deepcopy(np.asmatrix(x.reshape(batch_size, -1)))  #batch 내의 각 input을 단위로 softmax를 수행하기 위해 reshape를 수행
         
@@ -614,10 +609,8 @@ class ANN():
         
         return np.asarray(temp_x.reshape(x.shape))   #원래 형상으로 복귀하여 전달
                             
-    def softmax_backward(self, ret_x, propagation):
-        
-        global batch_size
-        
+    def softmax_backward(self, ret_x, propagation, batch_size):
+
         temp_x = np.asmatrix(ret_x.reshape(batch_size, -1))  #batch 내의 각 input을 단위로 softmax를 수행하기 위해 reshape를 수행
         temp_prop = propagation.reshape(batch_size, -1)
 
@@ -664,8 +657,7 @@ class ANN():
         y[y==0] = y[y==0] + self.delta
         return -np.sum(t*np.log(y))
     
-    def cross_entropy_forward(self, y, t):   
-        global batch_size
+    def cross_entropy_forward(self, y, t, batch_size):   
         return self.cross_entropy(y, t)/batch_size
         
     def cross_entropy_backward(self, y, t):
@@ -763,9 +755,9 @@ class ANN():
         try:
             temp=[]
             for i in range(len(self.structure)):
-                temp.append(self.affine_inputs[i].tolist())
+                temp.append(self.fan_ins[i].tolist())
 
-            model_json["affine_inputs"] = temp
+            model_json["fan_ins"] = temp
             
         except Exception as e:
             pass
@@ -773,9 +765,9 @@ class ANN():
         try:
             temp=[]
             for i in range(len(self.structure)):
-                temp.append(self.affine_outputs[i].tolist())
+                temp.append(self.fan_outs[i].tolist())
             
-            model_json["affine_outputs"] = temp
+            model_json["fan_outs"] = temp
             
         except Exception as e:
             pass
@@ -795,6 +787,10 @@ class ANN():
         visualize_error_log(self.error_log)
         return
 
+    def vis_inner_dist(self):
+
+        visualize_fanio(self.fan_ins, self.fan_outs)
+        return
 
 
 #util: create a model from a json file
@@ -854,9 +850,9 @@ def make(file):
     try:
         temp = []
         for i in range(len(model.structure)):
-            temp.append(np.array(model_json["affine_inputs"][i]))
+            temp.append(np.array(model_json["fan_ins"][i]))
             
-        model.affine_inputs = temp
+        model.fan_ins = temp
             
     except Exception as e:
         pass
@@ -864,9 +860,9 @@ def make(file):
     try:
         temp = []
         for i in range(len(model.structure)):
-            temp.append(np.array(model_json["affine_outputs"][i]))
+            temp.append(np.array(model_json["fan_outs"][i]))
             
-        model.affine_outputs = temp
+        model.fan_outs = temp
             
     except Exception as e:
         pass
@@ -890,5 +886,35 @@ def visualize_error_log(error_log):
     plt.ylabel('Error')
     plt.grid(True, color='#00ACCD', alpha=0.2, linestyle='--')
 
+    plt.show()
+
     return
   
+def visualize_fanio(fan_ins, fan_outs):
+
+    mpl.rc('xtick', color = '#4A4A4A', labelsize = 12)
+    mpl.rc('ytick', color = '#4A4A4A', labelsize = 12)
+    mpl.rc('lines', linewidth = 1.5, markeredgewidth = 0)
+    mpl.rc('axes', labelsize= 14, titlesize = 30, titlepad=40, labelpad = 17)
+    mpl.rc('axes.spines', left=False, right=False, top=False, bottom = False)
+    mpl.rc('figure', titlesize = 20, figsize = (20, 7))
+
+    fig1, fi_axes = plt.subplots(1, len(fis))
+    fig2, fo_axes = plt.subplots(1, len(fos))
+
+    fig1.suptitle("Actiavation Dists")
+    fig2.suptitle("Fan Out Dists")
+
+    for i in range(len(fis)):
+
+        fi_axes[i].hist(fan_ins[i+1].reshape(1, -1)[0], bins=20, color="#00ACCD")
+        fi_axes[i].set_xlabel('Layer' + str(i+1))
+        fi_axes[i].grid(True, color='#00ACCD', alpha=0.2, linestyle='--')
+
+        fo_axes[i].hist(fan_outs[i].reshape(1, -1)[0], bins=20, color="#00ACCD")
+        fo_axes[i].set_xlabel('Layer' + str(i+1))
+        fo_axes[i].grid(True, color='#00ACCD', alpha=0.2, linestyle='--')
+    
+    plt.show()
+
+    return
