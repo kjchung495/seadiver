@@ -6,6 +6,7 @@ import pandas as pd
 
 import copy
 import time
+import json
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -470,12 +471,12 @@ class ANN():
         for i in range(iteration):
 
             if save_log:
-                out, error = self.forward(x, t)
-                self.backward(out, t)
+                out, error, batch_size= self.forward(x, t)
+                self.backward(out, t, batch_size)
                 self.error_log.append(error)
             else:
-                out, error = self.forward(x, t)
-                self.backward(out, t)
+                out, error, batch_size = self.forward(x, t)
+                self.backward(out, t, batch_size)
             
             #print(error)
             
@@ -549,16 +550,16 @@ class ANN():
                     print("process ==================   90%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 10*iteration/10:
                     print("process ===================  95%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
-                elif i+1 == iteration:
-                    print("process ==================== 100%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n")
         
+        if display:
+            print("process ==================== 100%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n", flush=False)
         
         end_time = time.time()
         
         t = end_time - start_time
-        h = round(t//3600, 0)
-        m = round((t-(3600*h))//60, 0)
-        s = round(t-(3600*h)-(60*m), 0)
+        h = int(round(t//3600, 0))
+        m = int(round((t-(3600*h))//60, 0))
+        s = int(round(t-(3600*h)-(60*m), 0))
         
         if display:
             print(str(h) + " hour " + str(m) + " min " +  str(s)+ " sec taken")
@@ -899,13 +900,13 @@ def visualize_fanio(fan_ins, fan_outs):
     mpl.rc('axes.spines', left=False, right=False, top=False, bottom = False)
     mpl.rc('figure', titlesize = 20, figsize = (20, 7))
 
-    fig1, fi_axes = plt.subplots(1, len(fis))
-    fig2, fo_axes = plt.subplots(1, len(fos))
+    fig1, fi_axes = plt.subplots(1, len(fan_ins)-1)
+    fig2, fo_axes = plt.subplots(1, len(fan_outs))
 
-    fig1.suptitle("Actiavation Dists")
-    fig2.suptitle("Fan Out Dists")
+    fig1.suptitle("Actiavation Distributions")
+    fig2.suptitle("Fan Out Distributions")
 
-    for i in range(len(fis)):
+    for i in range(len(fan_outs)):
 
         fi_axes[i].hist(fan_ins[i+1].reshape(1, -1)[0], bins=20, color="#00ACCD")
         fi_axes[i].set_xlabel('Layer' + str(i+1))
