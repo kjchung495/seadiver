@@ -511,48 +511,48 @@ class ANN():
             
             if display:
                 if i < 0.5*iteration/10:
-                    print("process                      0%  epoch: " + str(i+1)  + " error: " + str(round(error, error_round)), end="\r", flush=True)
+                    print("process                      0%  step: " + str(i+1)  + " error: " + str(round(error, error_round)), end="\r", flush=True)
                 elif i < 1*iteration/10:
-                    print("process =                    5%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =                    5%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 1.5*iteration/10:
-                    print("process ==                   10%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ==                   10%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 2*iteration/10:
-                    print("process ===                  15%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===                  15%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 2.5*iteration/10:
-                    print("process ====                 20%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ====                 20%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 3*iteration/10:
-                    print("process =====                25%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =====                25%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 3.5*iteration/10:
-                    print("process ======               30%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ======               30%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 4*iteration/10:
-                    print("process =======              35%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =======              35%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 4.5*iteration/10:
-                    print("process ========             40%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ========             40%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 5*iteration/10:
-                    print("process =========            45%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =========            45%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 5.5*iteration/10:
-                    print("process ==========           50%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ==========           50%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 6*iteration/10:
-                    print("process ===========          55%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===========          55%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 6.5*iteration/10:
-                    print("process ============         60%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ============         60%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 7*iteration/10:
-                    print("process =============        65%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =============        65%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 7.5*iteration/10:
-                    print("process ==============       70%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ==============       70%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 8*iteration/10:
-                    print("process ===============      75%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===============      75%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 8.5*iteration/10:
-                    print("process ================     80%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ================     80%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 9*iteration/10:
-                    print("process =================    85%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process =================    85%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 9.5*iteration/10:
-                    print("process ==================   90%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ==================   90%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
                 elif i < 10*iteration/10:
-                    print("process ===================  95%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print("process ===================  95%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
         
         if display:
-            print("process ==================== 100%  epoch: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n", flush=False)
+            print("process ==================== 100%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n", flush=False)
         
         end_time = time.time()
         
@@ -562,7 +562,7 @@ class ANN():
         s = int(round(t-(3600*h)-(60*m), 0))
         
         if display:
-            print(str(h) + " hour " + str(m) + " min " +  str(s)+ " sec taken")
+            print(str(h) + "hour " + str(m) + "min " +  str(s)+ "sec taken")
             
         return
     
@@ -700,7 +700,7 @@ class ANN():
     
     #util: export
     
-    def export(self, directory=r".", file_name="model.json"):
+    def export(self, directory=r".", file_name= "model_" + str(time.localtime().tm_year) + "-" + str(time.localtime().tm_mon) + "-" + str(time.localtime().tm_mday) + "-" + str(time.localtime().tm_hour) + ":" + str(time.localtime().tm_min) + ".json"):
         
         if not file_name.endswith(".json"):
             raise Exception("'file_name' must end with '.json'")
@@ -774,7 +774,7 @@ class ANN():
             pass
         
         #export as json file
-        with open(directory + "/" + file_name, "w") as f:
+        with open(directory + "\\" + file_name, "w") as f:
             json.dump(model_json, f)
         
         print("model export successful: " + directory + "\\" + file_name)
@@ -790,7 +790,7 @@ class ANN():
 
     def vis_inner_dist(self):
 
-        visualize_fanio(self.fan_ins, self.fan_outs)
+        visualize_fanio_dist(self.fan_ins, self.fan_outs)
         return
 
 
@@ -891,7 +891,7 @@ def visualize_error_log(error_log):
 
     return
   
-def visualize_fanio(fan_ins, fan_outs):
+def visualize_fanio_dist(fan_ins, fan_outs):
 
     mpl.rc('xtick', color = '#4A4A4A', labelsize = 12)
     mpl.rc('ytick', color = '#4A4A4A', labelsize = 12)
