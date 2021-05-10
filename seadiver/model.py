@@ -2,7 +2,6 @@
 # coding: utf-8
 
 import numpy as np
-import pandas as pd
 
 import copy
 import time
@@ -458,13 +457,14 @@ class ANN():
     
     def train(self, x, t, learning_rate, iteration, save_log=False, flush_log=True, display=True, error_round=10):
         
-        print("mini batch process (learning rate: " + str(learning_rate) + ", iteration: " + str(iteration) + ")")
+        if display:
+            print(f"train session (learning rate: {str(learning_rate)} iteration: {str(iteration)})")
         
         if flush_log:
             self.error_log = []
         
-        error_memory = []
-        initial_five_passed = False
+        recent_error_memory = [] #a list for recent 5 error_logs 
+        initial_five_passed_flag = False
         
         start_time = time.time()
         
@@ -477,13 +477,6 @@ class ANN():
             else:
                 out, error, batch_size = self.forward(x, t)
                 self.backward(out, t, batch_size)
-            
-            #print(error)
-            
-            #print("round" +str(i) + " layer gradients: \n")
-            #print(str(self.layer_gradients) +"\n")
-            #print("round" +str(i) + " bias gradients: \n")
-            #print(str(self.b_gradients) + "\n")
                   
             #update
             nparray_layers = np.array(self.w_layers, dtype=object)
@@ -494,65 +487,80 @@ class ANN():
             self.w_layers = list(nparray_layers - nparray_layer_gradients*learning_rate)
             self.b_layers = list(nparray_biases - nparray_b_gradients*learning_rate)
             
+
+            #check for fatal learning issues
             if i<5:
-                error_memory.append(error)
+                recent_error_memory.append(error)
             else:
                 if i == 5:
-                    initial_five_passed = True
-                del error_memory[0]
-                error_memory.append(error)
+                    initial_five_passed_flag = True
+                del recent_error_memory[0]
+                recent_error_memory.append(error)
             
-            if np.count_nonzero(nparray_layer_gradients[len(self.w_layers)-1] == 0) == np.size(nparray_layer_gradients[len(self.w_layers)-1]):
-                print("Gradient Lost: last layer gradients equals to 0, i: " + str(i+1) + ", error: " + str(error))
-                return
-            elif initial_five_passed and error_memory[0] == error_memory[1] == error_memory[2] == error_memory[3] == error_memory[4]:
-                print("Learning Effect Vanished, i: " + str(i+1) + ", error: " + str(error))
-                return
+            for j in range(len(self.w_layers)):
+                gradient_zero_layer_flag = False
+                gradient_zero_layer_indexes = []
+                if np.count_nonzero(nparray_layer_gradients[j] == 0) == np.size(nparray_layer_gradients[j]):
+                    gradient_zero_layer_flag = True
+                    gradient_zero_layer_indexes.append(j+1)
             
+            if gradient_zero_layer_flag:
+            
+                #terminate train if the last layer's gradients equal to 0
+                if len(self.w_layers) in gradient_zero_layer_indexes:  
+                    print(f"Session Terminated: layer{gradient_zero_layer_indexes}'s gradients equal to 0, step: {str(i+1)} error: {str(round(error, error_round))}                                      ")
+                    return
+                else:
+                    print(f"Warning: layer{gradient_zero_layer_indexes}'s gradient equals to 0, step: {str(i+1)} error: {str(round(error, error_round))}                                      ")
+
+            if initial_five_passed_flag and recent_error_memory[0] == recent_error_memory[1] == recent_error_memory[2] == recent_error_memory[3] == recent_error_memory[4]:
+                print(f"Session Terminated: no learning effect for recent 5 steps, step: {str(i+1)} error: {str(round(error, error_round))}                                      ")
+                return
+
             if display:
                 if i < 0.5*iteration/10:
-                    print("process                      0%  step: " + str(i+1)  + " error: " + str(round(error, error_round)), end="\r", flush=True)
+                    print(f"process                      0%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r", flush=True)
                 elif i < 1*iteration/10:
-                    print("process =                    5%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process =                    5%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 1.5*iteration/10:
-                    print("process ==                   10%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ==                   10%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 2*iteration/10:
-                    print("process ===                  15%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ===                  15%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 2.5*iteration/10:
-                    print("process ====                 20%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ====                 20%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 3*iteration/10:
-                    print("process =====                25%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process =====                25%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 3.5*iteration/10:
-                    print("process ======               30%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ======               30%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 4*iteration/10:
-                    print("process =======              35%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process =======              35%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 4.5*iteration/10:
-                    print("process ========             40%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ========             40%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 5*iteration/10:
-                    print("process =========            45%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process =========            45%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 5.5*iteration/10:
-                    print("process ==========           50%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ==========           50%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 6*iteration/10:
-                    print("process ===========          55%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ===========          55%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 6.5*iteration/10:
-                    print("process ============         60%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ============         60%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 7*iteration/10:
-                    print("process =============        65%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process =============        65%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 7.5*iteration/10:
-                    print("process ==============       70%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ==============       70%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 8*iteration/10:
-                    print("process ===============      75%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ===============      75%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 8.5*iteration/10:
-                    print("process ================     80%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ================     80%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 9*iteration/10:
-                    print("process =================    85%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process =================    85%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 9.5*iteration/10:
-                    print("process ==================   90%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
+                    print(f"process ==================   90%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
                 elif i < 10*iteration/10:
-                    print("process ===================  95%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\r")
-        
+                    print(f"process ===================  95%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\r")
+
         if display:
-            print("process ==================== 100%  step: " + str(i+1) + " error: " + str(round(error, error_round)), end="\n\n", flush=False)
+            print(f"process ==================== 100%  step: {str(i+1)} error: {str(round(error, error_round))}", end="\n\n", flush=False)
         
         end_time = time.time()
         
@@ -700,84 +708,108 @@ class ANN():
     
     #util: export
     
-    def export(self, directory=r".", file_name= "model_" + str(time.localtime().tm_year) + "-" + str(time.localtime().tm_mon) + "-" + str(time.localtime().tm_mday) + "-" + str(time.localtime().tm_hour) + ":" + str(time.localtime().tm_min) + ".json"):
+    def export(self, directory= r".\\", file_name= None, include= "essential"):
+
+        compat_include_params = {"all", "essential", "error_log", "gradients", "fan_io"}
+
+        #check validity for 'include' param
+        if type(include) == str:
+            if include not in compat_include_params:
+                raise Exception("compatible parameters for 'include' argement are: " + str(compat_include_params))
+
+        elif type(include) == list or type(include) == tuple or type(include) == set:
+            for param in include:
+                if param not in compat_include_params:
+                    raise Exception("compatible parameters for 'include' argement are: " + str(compat_include_params))
+        else:
+            raise Exception("compatible parameters for 'include' argement are: " + str(compat_include_params))
         
+        #initialize 'file_name'
+        if file_name == None:
+            file_name = "model_" + str(time.localtime().tm_mon) + str(time.localtime().tm_mday) + "-" + str(time.localtime().tm_hour) + str(time.localtime().tm_min) + ".json"
+
+        #check validity for 'file_name' param 
         if not file_name.endswith(".json"):
             raise Exception("'file_name' must end with '.json'")
-            return
-        
+
         model_json = {}
-        
+
         #essential export
-        model_json["input_shape"] = self.input_shape
-        model_json["structure"] = self.structure
-        model_json["strict"] = self.strict
-        model_json["initializer"] = self.initializer
-        model_json["output"] = self.output
-        model_json["loss"] = self.loss
-        model_json["activations"] = self.activations
-        model_json["delta"] = self.delta
+        if "all" in include or "essential" in include:
+            model_json["input_shape"] = self.input_shape
+            model_json["structure"] = self.structure
+            model_json["strict"] = self.strict
+            model_json["initializer"] = self.initializer
+            model_json["output"] = self.output
+            model_json["loss"] = self.loss
+            model_json["activations"] = self.activations
+            model_json["delta"] = self.delta
         
-        temp= []
-        for i in range(len(self.structure)):
-            temp.append(self.w_layers[i].tolist())
+            temp= []
+            for i in range(len(self.structure)):
+                temp.append(self.w_layers[i].tolist())
         
-        model_json["w_layers"] = temp
-        model_json["b_layers"] = self.b_layers
+            model_json["w_layers"] = temp
+            model_json["b_layers"] = self.b_layers
         
         #optional export
-        
-        try:
-            model_json["error_log"] = self.error_log
-            
-        except Exception as e:
-            pass
-        
-        try:
-            temp=[]
-            for i in range(len(self.structure)):
-                temp.append(self.w_gradients[i].tolist())
-            
-            model_json["w_gradients"] = temp
-            
-        except Exception as e:
-            pass
-    
-        try:
-            temp=[]
-            for i in range(len(self.structure)):
-                temp.append(self.b_gradients[i].tolist())
-            
-            model_json["b_gradients"] = temp
-            
-        except Exception as e:
-            pass
-        
-        try:
-            temp=[]
-            for i in range(len(self.structure)):
-                temp.append(self.fan_ins[i].tolist())
+        if "all" in include or "error_log" in include:
 
-            model_json["fan_ins"] = temp
+            try:
+                model_json["error_log"] = self.error_log
             
-        except Exception as e:
-            pass
+            except Exception as e:
+                pass
+
+        if "all" in include or "gradients" in include:
+
+            try:
+                temp=[]
+                for i in range(len(self.structure)):
+                    temp.append(self.w_gradients[i].tolist())
+            
+                model_json["w_gradients"] = temp
+            
+            except Exception as e:
+                pass
+    
+            try:
+                temp=[]
+                for i in range(len(self.structure)):
+                    temp.append(self.b_gradients[i].tolist())
+            
+                model_json["b_gradients"] = temp
+            
+            except Exception as e:
+                pass
         
-        try:
-            temp=[]
-            for i in range(len(self.structure)):
-                temp.append(self.fan_outs[i].tolist())
+        if "all" in include or "fan_io" in include:
+        
+            try:
+                temp=[]
+                for i in range(len(self.structure)):
+                    temp.append(self.fan_ins[i].tolist())
+
+                model_json["fan_ins"] = temp
             
-            model_json["fan_outs"] = temp
+            except Exception as e:
+                pass
+        
+            try:
+                temp=[]
+                for i in range(len(self.structure)):
+                    temp.append(self.fan_outs[i].tolist())
             
-        except Exception as e:
-            pass
+                model_json["fan_outs"] = temp
+            
+            except Exception as e:
+                pass
         
         #export as json file
         with open(directory + "\\" + file_name, "w") as f:
             json.dump(model_json, f)
         
-        print("model export successful: " + directory + "\\" + file_name)
+        print(f"model export successful: '{directory}\{file_name}'")
         
         return
 
@@ -796,9 +828,9 @@ class ANN():
 
 #util: create a model from a json file
 
-def make(file):
+def make(io):
         
-    with open(file, "r") as f:
+    with open(io, "r") as f:
         model_json = json.load(f)
         
     #create a default model
@@ -806,28 +838,33 @@ def make(file):
     model = ANN((1,1), (1, 1), "sigmoid")
         
     #essential imports
+    
+    try:
+        model.input_shape = model_json["input_shape"]
+        model.structure = model_json["structure"]
+        model.strict = model_json["strict"]
+        model.initializer = model_json["initializer"]
+        model.output = model_json["output"]
+        model.loss = model_json["loss"]
+        model.activations = model_json["activations"]
+        model.delta = model_json["delta"]
         
-    model.input_shape = model_json["input_shape"]
-    model.structure = model_json["structure"]
-    model.strict = model_json["strict"]
-    model.initializer = model_json["initializer"]
-    model.output = model_json["output"]
-    model.loss = model_json["loss"]
-    model.activations = model_json["activations"]
-    model.delta = model_json["delta"]
+        temp = []
+        for i in range(len(model.structure)):
+            temp.append(np.array(model_json["w_layers"][i]))
         
-    temp = []
-    for i in range(len(model.structure)):
-        temp.append(np.array(model_json["w_layers"][i]))
-        
-    model.w_layers = temp
-    model.b_layers = model_json["b_layers"]
+        model.w_layers = temp
+        model.b_layers = model_json["b_layers"]
+    except Exception as e:
+        pass
         
         
     #optional import
-        
-    model.error_log = model_json["error_log"]
-        
+    try:
+        model.error_log = model_json["error_log"] 
+    except Exception as e:
+        pass
+    
     try:
         temp = []
         for i in range(len(model.structure)):
@@ -883,7 +920,7 @@ def visualize_error_log(error_log):
 
     fig = plt.figure(figsize = (20, 10))
     plt.plot(error_log, color="#00ACCD")
-    plt.xlabel('Epoch')
+    plt.xlabel('Step')
     plt.ylabel('Error')
     plt.grid(True, color='#00ACCD', alpha=0.2, linestyle='--')
 

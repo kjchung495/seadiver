@@ -18,7 +18,7 @@ classifiers = [
 
 setup(
     name = "seadiver",
-    version = "0.2.6",
+    version = "0.3.5",
     author = "KJ Chung",
     author_email = "kjchung495@yonsei.ac.kr",
     description = "A DeepLearning Framework",
